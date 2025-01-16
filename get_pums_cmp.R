@@ -48,25 +48,45 @@ add_vars <- function(df){
                         TRUE          ~ NA_character_))
 }
 
-reg_pums_count <- purrr::partial(psrc_pums_count, rr=TRUE, incl_na=FALSE)      # for default reliability and NA settings
+xtab_var1s <- c("DIS","low_inc","employment","lep","poc")
+xtab_var2s <- c("age_detail","over_65","low_inc","poc","veteran","DIS")
 
-ctyreg_pums_count <- function(so, groupvars=NULL){                             # Function for county + region counts
+var_vctr <- function(var){
+  x <- data.frame(setdiff(xtab_var2s, var), var) %>%
+  transpose() %>% c()
+}
+
+reg_pums_count <- purrr::partial(psrc_pums_count, pp_df, rr=TRUE, incl_na=FALSE) # set default data object, settings
+
+ctyreg_pums_count <- function(groupvars=NULL){                                 # Function for county + region counts
   rs      <- list()
-  rs[[1]] <- reg_pums_count(so, group_vars=groupvars)                          # incl_na=FALSE option for accurate within-subgroup shares
-  rs[[2]] <- reg_pums_count(so, group_vars=c("COUNTY", groupvars)) %>%
+  rs[[1]] <- reg_pums_count(group_vars=groupvars)                              # incl_na=FALSE option for accurate within-subgroup shares
+  rs[[2]] <- reg_pums_count(group_vars=c("COUNTY", groupvars)) %>%
     filter(COUNTY!="Region")                                                   # Remove duplicate total level
   rs %<>% rbindlist() %>% arrange(DATA_YEAR, COUNTY)                           # Combine county & regional results
   return(rs)
 }
 
-# 3. Main -----------------------------------------------------------
-dyear <- 2022
-# Generate all indicators for a single survey
-pums_rds <- "J:/Projects/Census/AmericanCommunitySurvey/Data/PUMS/pums_rds"  # Network PUMS location
-pp_df <- get_psrc_pums(5, dyear, "p", pvars, dir=pums_rds)
-pp_df %<>% add_vars()
+apply_cr_pums_count <- function(var){
+    x <- sapply(var_vctr(var), ctyreg_pums_count, simplify=FALSE, USE.NAMES=TRUE)
+}
 
-cmpstats <- list()
+# Write all tables to file
+write_cmp_pums_xlsx <- function(result_list){
+  rs <- result_list #%>% unlist(recursive=FALSE, use.names=TRUE)
+  openxlsx::write.xlsx(rs, file = "cmp_outfile.xlsx",
+                       sheetName = names(rs), rowNames = FALSE)
+  return(invisible(NULL))
+}
+
+# 3. Retrieve data & calculate statistics ---------------------------
+dyear <- 2022
+pums_rds <- "J:/Projects/Census/AmericanCommunitySurvey/Data/PUMS/pums_rds"    # Network PUMS location
+pp_df <- get_psrc_pums(5, dyear, "p", pvars, dir=pums_rds)                     # retrieve data
+pp_df %<>% add_vars()                                                          # add recode variables
+# cmpstats <- sapply(xtab_var1s, apply_cr_pums_count, simplify=FALSE, USE.NAMES=TRUE) # calculate all combinations
+
+# calculate specified combinations
 cmpstats$disability_age_detail <- ctyreg_pums_count(pp_df, c("age_detail","DIS"))
 cmpstats$disability_age65      <- ctyreg_pums_count(pp_df, c("over_65","DIS"))
 cmpstats$disability_veteran    <- ctyreg_pums_count(pp_df, c("veteran","DIS"))
@@ -90,3 +110,5 @@ cmpstats$employment_LEP        <- ctyreg_pums_count(pp_df, c("lep","employment")
 cmpstats$lep_age_detail        <- ctyreg_pums_count(pp_df, c("age_detail","lep"))
 cmpstats$lep_age65             <- ctyreg_pums_count(pp_df, c("over_65","lep"))
 cmpstats$lep_low_inc           <- ctyreg_pums_count(pp_df, c("low_inc","lep"))
+
+write_cmp_pums_xlsx(cmpstats)
