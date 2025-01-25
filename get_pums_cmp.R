@@ -19,38 +19,47 @@ pvars <- c(
 # 2. Setup: Helper functions ----------------------------------------
 add_vars <- function(df){
   df %<>% mutate(
-    age5_17  = case_when(between(AGEP,5,17) ~ "5-17",
-                         !is.na(AGEP)       ~ "not 5-17"),
-    over_65  = case_when(AGEP > 64          ~ "65+",
-                         between(AGEP,0,64) ~ "0-64"),
+    age5_17  = case_when(between(AGEP,5,17)  ~ "5-17",
+                         !is.na(AGEP)        ~ "not 5-17"),
+    over_65  = case_when(AGEP > 64           ~ "65+",
+                         between(AGEP,0,64)  ~ "0-64"),
     age65_84 = case_when(between(AGEP,65,84) ~ "65-84",
-                         AGEP < 65          ~ "0-64"),
-    over_85  = case_when(AGEP > 84          ~ "85+",
-                         between(AGEP,0,84) ~ "0-84"),
+                         AGEP < 65           ~ "0-64"),
+    over_85  = case_when(AGEP > 84           ~ "85+",
+                         between(AGEP,0,84)  ~ "0-84"),
     poc = factor(
       case_when(PRACE=="White alone" ~ "Non-POC",
                 !is.na(PRACE)        ~ "POC"),
       levels=c("POC","Non-POC")),
     race = forcats::fct_relevel(
-      factor(str_replace_all(as.character(PRACE), "( or African American)? alone", "")),
-      c("Some Other Race", "Two or More Races"), after = Inf),
-    low_inc = case_when(is.na(POVPIP) ~ NA_character_,                         # Low income = 200 pct poverty level
-                        POVPIP < 200  ~ "Yes",
-                        TRUE          ~ "No"),
+        factor(
+          str_replace(
+            str_replace(as.character(PRACE), "Latino", "Latinx"),
+            "( or African American)? alone", "")),
+        c("Some Other Race", "Two or More Races"), after = Inf),
+    low_inc = factor(
+      case_when(is.na(POVPIP)  ~ NA_character_,                                # Low income = 200 pct poverty level
+                POVPIP < 200   ~ "Low Income",
+                !is.na(POVPIP) ~ "Not Low Income"),
+      levels=c("Low Income", "Not Low Income")),
     lep = factor(                                                              # Low English Proficiency @ individual level
-      case_when(AGEP < 5                  ~ NA_character_,
-                !str_detect(ENG, "^Very") ~ "Speak English less than 'very well'",
-                TRUE                      ~ "Speak English 'very well'")),
+      case_when(AGEP < 5                          ~ NA_character_,
+                grepl("^Very", as.character(ENG)) ~ "Speak English less than 'very well'",
+                !is.na(ENG)                       ~ "Speak English 'very well'")),
     employment = factor(
-      case_when(AGEP > 17 & grepl("^(Civilian|Armed) ", as.character(ESR)) ~"Employed",
-                AGEP > 17 &!is.na(ESR)                                     ~"Unemployed",
-                AGEP < 18                                                  ~ NA_character_)),
-    veteran = case_when(!is.na("VPS") ~ "Veteran",
-                        AGEP > 17     ~ "Not a veteran",
-                        TRUE          ~ NA_character_),
-    poc_woman = case_when(AGEP < 18                            ~ NA_character_,
-                          SEX=="Female" & PRACE!="White alone" ~ "POC woman",
-                          TRUE                                 ~"All others"))
+      case_when(AGEP < 18                                      ~ NA_character_,
+                grepl("^(Civilian|Armed) ", as.character(ESR)) ~ "Employed",
+                !is.na(ESR)                                    ~ "Unemployed")),
+    veteran = factor(
+      case_when(AGEP < 18     ~ NA_character_
+                !is.na("VPS") ~ "Veteran",
+                is.na("VPS")  ~ "Not a veteran"),
+      levels=c("Veteran","Not a veteran")),
+    poc_woman = factor(
+      case_when(AGEP < 18                            ~ NA_character_,
+                SEX=="Female" & PRACE!="White alone" ~ "POC woman",
+                !is.na(SEX) & !is.na(PRACE)          ~ "All others"),
+      levels=c("POC woman","All others")))
 }
 
 xtab_var1s <- c("DIS","low_inc","employment","lep","poc", "race",)
