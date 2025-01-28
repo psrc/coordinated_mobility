@@ -102,6 +102,7 @@ pp_df %<>% add_vars()                                                          #
 #cmpstats <- sapply(xtab_var1s, apply_cr_pums_count, simplify=FALSE, USE.NAMES=TRUE) # calculate all combinations
 
 # calculate specified combinations
+cmpstats <- list()
 cmpstats$age65_veteran         <- ctyreg_pums_count(c("veteran","over_65"))
 cmpstats$age65_84_veteran      <- ctyreg_pums_count(c("veteran","age65_84"))
 cmpstats$age85_veteran         <- ctyreg_pums_count(c("veteran","over_85"))
