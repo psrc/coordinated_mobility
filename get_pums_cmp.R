@@ -88,7 +88,7 @@ apply_cr_pums_count <- function(var){
 
 # Write all tables to file
 write_cmp_pums_xlsx <- function(result_list){
-  rs <- result_list %>% unlist(recursive=FALSE, use.names=TRUE)
+  rs <- result_list #%>% unlist(recursive=FALSE, use.names=TRUE)
   openxlsx::write.xlsx(rs, file = "cmp_outfile.xlsx",
                        sheetName = names(rs), rowNames = FALSE)
   return(invisible(NULL))
