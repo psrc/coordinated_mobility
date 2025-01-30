@@ -45,7 +45,7 @@ add_vars <- function(df){
     lep = factor(                                                              # Low English Proficiency @ individual level
       case_when(AGEP < 5                          ~ NA_character_,
                 grepl("^Very", as.character(ENG)) ~ "Speak English less than 'very well'",
-                !is.na(ENG)                       ~ "Speak English 'very well'")),
+                TRUE                              ~ "Speak English 'very well'")),
     employment = factor(
       case_when(AGEP < 18                                      ~ NA_character_,
                 grepl("^(Civilian|Armed) ", as.character(ESR)) ~ "Employed",
