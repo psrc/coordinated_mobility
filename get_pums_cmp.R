@@ -32,11 +32,11 @@ add_vars <- function(df){
                 !is.na(PRACE)        ~ "POC"),
       levels=c("POC","Non-POC")),
     race = forcats::fct_relevel(
-        factor(
-          str_replace(
-            str_replace(as.character(PRACE), "Latino", "Latinx"),
-            "( or African American)? alone", "")),
-        c("Some Other Race", "Two or More Races"), after = Inf),
+      factor(
+        str_replace(
+          str_replace(as.character(PRACE), "Latino", "Latinx"),
+          "( or African American)? alone", "")),
+      c("Some Other Race", "Two or More Races"), after = Inf),
     low_inc = factor(
       case_when(is.na(POVPIP)  ~ NA_character_,                                # Low income = 200 pct poverty level
                 POVPIP < 200   ~ "Low Income",
@@ -64,7 +64,7 @@ add_vars <- function(df){
 
 xtab_var1s <- c("DIS","low_inc","employment","lep","poc", "race")
 xtab_var2s <- c("age_detail", "race", "age5_17", "over_65", "age65_84", "over_85",
-                "low_inc","poc","veteran","DIS", "poc_woman")
+                "low_inc","poc","veteran","DIS", "poc_woman", "lep")
 
 var_vctr <- function(var){
   x <- data.frame(setdiff(xtab_var2s, var), var) %>%
@@ -103,47 +103,49 @@ pp_df %<>% add_vars()                                                          #
 
 # calculate specified combinations
 cmpstats <- list()
-cmpstats$age65_veteran         <- ctyreg_pums_count(c("veteran","over_65"))
-cmpstats$age65_84_veteran      <- ctyreg_pums_count(c("veteran","age65_84"))
-cmpstats$age85_veteran         <- ctyreg_pums_count(c("veteran","over_85"))
+cmpstats$age65_disability      <- ctyreg_pums_count(c("over_65","DIS"))
+cmpstats$age65_84_disability   <- ctyreg_pums_count(c("age65_84","DIS"))
+cmpstats$age85_disability      <- ctyreg_pums_count(c("over_85","DIS"))
+cmpstats$age65_lowinc          <- ctyreg_pums_count(c("over_65","low_inc"))
+cmpstats$age65_84_lowinc       <- ctyreg_pums_count(c("age65_84","low_inc"))
+cmpstats$age85_lowinc          <- ctyreg_pums_count(c("over_85","low_inc"))
+cmpstats$age65_lep             <- ctyreg_pums_count(c("over_65","lep"))
+cmpstats$age65_84_lep          <- ctyreg_pums_count(c("age65_84","lep"))
+cmpstats$age85_lep             <- ctyreg_pums_count(c("over_85","lep"))
+cmpstats$age65_poc             <- ctyreg_pums_count(c("over_65","poc"))
+cmpstats$age65_84_poc          <- ctyreg_pums_count(c("age65_84","poc"))
+cmpstats$age85_poc             <- ctyreg_pums_count(c("over_85","poc"))
+cmpstats$age65_race            <- ctyreg_pums_count(c("over_65","race"))
+cmpstats$age65_84_race         <- ctyreg_pums_count(c("age65_84","race"))
+cmpstats$age85_race            <- ctyreg_pums_count(c("over_85","race"))
 
-cmpstats$disability_youth      <- ctyreg_pums_count(c("age5_17","DIS"))
-cmpstats$disability_age65      <- ctyreg_pums_count(c("over_65","DIS"))
-cmpstats$disability_age65_84   <- ctyreg_pums_count(c("age65_84","DIS"))
-cmpstats$disability_age85      <- ctyreg_pums_count(c("over_85","DIS"))
-cmpstats$disability_veteran    <- ctyreg_pums_count(c("veteran","DIS"))
-cmpstats$disability_low_inc    <- ctyreg_pums_count(c("low_inc","DIS"))
-cmpstats$disability_poc        <- ctyreg_pums_count(c("poc","DIS"))
-cmpstats$disability_race       <- ctyreg_pums_count(c("race","DIS"))
+cmpstats$youth_disability      <- ctyreg_pums_count(c("age5_17","DIS"))
+cmpstats$youth_lowinc          <- ctyreg_pums_count(c("age5_17","low_inc"))
+cmpstats$youth_poc             <- ctyreg_pums_count(c("age5_17","poc"))
+cmpstats$youth_race            <- ctyreg_pums_count(c("age5_17","race"))
+cmpstats$youth_lep             <- ctyreg_pums_count(c("age5_17","lep"))
 
-cmpstats$poc_youth             <- ctyreg_pums_count(c("age5_17","poc"))
-cmpstats$poc_age65             <- ctyreg_pums_count(c("over_65","poc"))
-cmpstats$poc_age65_84          <- ctyreg_pums_count(c("age65_84","poc"))
-cmpstats$poc_age85             <- ctyreg_pums_count(c("over_85","poc"))
-cmpstats$race_youth            <- ctyreg_pums_count(c("age5_17","race"))
-cmpstats$race_age65            <- ctyreg_pums_count(c("over_65","race"))
-cmpstats$race_age65_84         <- ctyreg_pums_count(c("age65_84","race"))
-cmpstats$race_age85            <- ctyreg_pums_count(c("over_85","race"))
+cmpstats$disability_low_inc    <- ctyreg_pums_count(c("DIS", "low_inc"))
+cmpstats$disability_employment <- ctyreg_pums_count(c("DIS","employment"))
 
-cmpstats$lowinc_youth          <- ctyreg_pums_count(c("age5_17","low_inc"))
-cmpstats$lowinc_age65          <- ctyreg_pums_count(c("over_65","low_inc"))
-cmpstats$lowinc_age65_84       <- ctyreg_pums_count(c("age65_84","low_inc"))
-cmpstats$lowinc_age85          <- ctyreg_pums_count(c("over_85","low_inc"))
-cmpstats$lowinc_veteran        <- ctyreg_pums_count(c("veteran","low_inc"))
-cmpstats$lowinc_poc            <- ctyreg_pums_count(c("poc","low_inc"))
-cmpstats$lowinc_race           <- ctyreg_pums_count(c("race","low_inc"))
+cmpstats$low_inc_employment    <- ctyreg_pums_count(c("low_inc","employment"))
+cmpstats$low_inc_poc_woman     <- ctyreg_pums_count(c("low_inc", "poc_woman"))
 
-cmpstats$employment_low_inc    <- ctyreg_pums_count(c("low_inc","employment"))
-cmpstats$employment_poc        <- ctyreg_pums_count(c("poc","employment"))
-cmpstats$employment_race       <- ctyreg_pums_count(c("race","employment"))
-cmpstats$employment_disability <- ctyreg_pums_count(c("DIS","employment"))
-cmpstats$employment_LEP        <- ctyreg_pums_count(c("lep","employment"))
-cmpstats$employment_veteran    <- ctyreg_pums_count(c("veteran","employment"))
+cmpstats$veteran_age65         <- ctyreg_pums_count(c("veteran","over_65"))
+cmpstats$veteran_age65_84      <- ctyreg_pums_count(c("veteran","age65_84"))
+cmpstats$veteran_age85         <- ctyreg_pums_count(c("veteran","over_85"))
+cmpstats$veteran_disability    <- ctyreg_pums_count(c("veteran","DIS"))
+cmpstats$veteran_lowinc        <- ctyreg_pums_count(c("veteran","low_inc"))
+cmpstats$veteran_employment    <- ctyreg_pums_count(c("veteran","employment"))
 
-cmpstats$lep_youth             <- ctyreg_pums_count(c("age5_17","lep"))
-cmpstats$lep_age65             <- ctyreg_pums_count(c("over_65","lep"))
-cmpstats$lep_age65_84          <- ctyreg_pums_count(c("age65_84","lep"))
-cmpstats$lep_age85             <- ctyreg_pums_count(c("over_85","lep"))
-cmpstats$lep_low_inc           <- ctyreg_pums_count(c("low_inc","lep"))
+cmpstats$lep_employment        <- ctyreg_pums_count(c("lep","employment"))
+cmpstats$lep_low_inc           <- ctyreg_pums_count(c("lep", "low_inc"))
+
+cmpstats$poc_lowinc            <- ctyreg_pums_count(c("poc","low_inc"))
+cmpstats$race_lowinc           <- ctyreg_pums_count(c("race","low_inc"))
+cmpstats$poc_disability        <- ctyreg_pums_count(c("poc","DIS"))
+cmpstats$race_disability       <- ctyreg_pums_count(c("race","DIS"))
+cmpstats$poc_employment        <- ctyreg_pums_count(c("poc","employment"))
+cmpstats$race_employment       <- ctyreg_pums_count(c("race","employment"))
 
 write_cmp_pums_xlsx(cmpstats)
