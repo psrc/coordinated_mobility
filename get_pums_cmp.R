@@ -51,9 +51,9 @@ add_vars <- function(df){
                 grepl("^(Civilian|Armed) ", as.character(ESR)) ~ "Employed",
                 !is.na(ESR)                                    ~ "Unemployed")),
     veteran = factor(
-      case_when(AGEP < 18     ~ NA_character_,
-                !is.na("VPS") ~ "Veteran",
-                is.na("VPS")  ~ "Not a veteran"),
+      case_when(AGEP < 18                ~ NA_character_,
+                is.na(as.character(VPS)) ~ "Not a veteran",
+                !is.na("VPS")            ~ "Veteran"),
       levels=c("Veteran","Not a veteran")),
     poc_woman = factor(
       case_when(AGEP < 18                            ~ NA_character_,
