@@ -85,7 +85,7 @@ add_hh_vars <- function(df){
       case_when(grepl("^[12] ", as.character(R65))        ~"Person age 65+ in household",
                 as.character(R65)=="No person 65 and over" ~"No person age 65+ in household"),
       levels=paste(c("Person", "No Person"), "age 65+ in household"))
-    )
+  )
 }
 
 xtab_var1s <- c("DIS","low_inc","employment","lep","poc", "race")
@@ -122,8 +122,8 @@ write_cmp_pums_xlsx <- function(result_list){
 
 # 3. Retrieve data & calculate statistics ---------------------------
 dyear <- 2023
-pums_rds <- "C:/Users/mjensen/projects/Census/AmericanCommunitySurvey/Data/PUMS/pums_rds"
-#pums_rds <- "J:/Projects/Census/AmericanCommunitySurvey/Data/PUMS/pums_rds"    # Network PUMS location,
+#pums_rds <- "C:/Users/mjensen/projects/Census/AmericanCommunitySurvey/Data/PUMS/pums_rds"
+pums_rds <- "J:/Projects/Census/AmericanCommunitySurvey/Data/PUMS/pums_rds"    # Network PUMS location,
 pp_df <- get_psrc_pums(5, dyear, "p", pvars, dir=pums_rds)                     # retrieve data
 hh_df <- get_psrc_pums(5, dyear, "h", hvars, dir=pums_rds)
 pp_df %<>% add_pp_vars() %>% add_shared_vars()                                 # add recode variables
@@ -177,10 +177,11 @@ cmpstats$race_disability       <- ctyreg_pums_count(pp_df, c("race","DIS"))
 cmpstats$poc_employment        <- ctyreg_pums_count(pp_df, c("poc","employment"))
 cmpstats$race_employment       <- ctyreg_pums_count(pp_df, c("race","employment"))
 
-cmpstats$zero_veh_disability   <- ctyreg_pums_count(hh_df, c("zero_veh","HDIS"))
-cmpstats$zero_veh_low_inc      <- ctyreg_pums_count(hh_df, c("zero_veh","low_inc"))
-cmpstats$zero_veh_age65        <- ctyreg_pums_count(hh_df, c("zero_veh","h65"))
-cmpstats$zero_veh_ppoc         <- ctyreg_pums_count(hh_df, c("zero_veh","poc"))
-cmpstats$zero_veh_prace        <- ctyreg_pums_count(hh_df, c("zero_veh","race"))
+cmpstats$zero_veh_disability   <- ctyreg_pums_count(hh_df, c("HDIS", "zero_veh"))
+cmpstats$zero_veh_low_inc      <- ctyreg_pums_count(hh_df, c("low_inc", "zero_veh"))
+cmpstats$zero_veh_age65        <- ctyreg_pums_count(hh_df, c("h65", "zero_veh"))
+cmpstats$zero_veh_ppoc         <- ctyreg_pums_count(hh_df, c("poc", "zero_veh"))
+cmpstats$zero_veh_prace        <- ctyreg_pums_count(hh_df, c("race", "zero_veh"))
+cmpstats$zero_veh              <- ctyreg_pums_count(hh_df, c("zero_veh"))
 
 write_cmp_pums_xlsx(cmpstats)
