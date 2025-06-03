@@ -60,7 +60,7 @@ add_pp_vars <- function(df){
                 grepl("^Very", as.character(ENG)) ~ "Speak English less than 'very well'",
                 TRUE                              ~ "Speak English 'very well'")),
     employment = factor(
-      case_when(AGEP < 18                                      ~ NA_character_,
+      case_when(AGEP < 18 | grepl("^Not in", as.character(ESR)) ~ NA_character_,
                 grepl("^(Civilian|Armed) ", as.character(ESR)) ~ "Employed",
                 !is.na(ESR)                                    ~ "Unemployed")),
     veteran = factor(
