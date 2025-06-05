@@ -56,9 +56,9 @@ add_pp_vars <- function(df){
     over_85  = case_when(AGEP > 84           ~ "85+",
                          !is.na(AGEP)        ~ "not 85+"),
     lep = factor(                                                              # Low English Proficiency @ individual level
-      case_when(AGEP < 5                          ~ NA_character_,
-                grepl("^Very", as.character(ENG)) ~ "Speak English less than 'very well'",
-                TRUE                              ~ "Speak English 'very well'")),
+      case_when(AGEP < 5                           ~ NA_character_,
+                !str_detect(as.character(ENG), "^Very") ~ "Speak English less than 'very well'",
+                TRUE                               ~ "Speak English 'very well'")),
     employment = factor(
       case_when(AGEP < 18 | grepl("^Not in", as.character(ESR)) ~ NA_character_,
                 grepl("^(Civilian|Armed) ", as.character(ESR)) ~ "Employed",
